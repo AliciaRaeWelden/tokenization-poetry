@@ -56,6 +56,23 @@ st.markdown("""
     padding: 12px 16px; border-left: 2px solid #c47a3d;
     background: rgba(196, 122, 61, 0.04); margin: 12px 0;
   }
+  .primer {
+    font-family: 'Iowan Old Style', 'Palatino', 'Georgia', serif;
+    font-size: 15px; line-height: 1.7; color: #c8c4b8;
+  }
+  .primer p { margin: 0 0 12px; }
+  .primer strong { color: #e8e6df; font-weight: 500; }
+  .primer code { background: #1a1815; padding: 1px 6px; border-radius: 3px; color: #c47a3d; font-size: 13px; }
+  .legend {
+    display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0;
+    font-size: 12px; color: #8a8678; align-items: center;
+  }
+  .legend-cell {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .legend-swatch {
+    width: 18px; height: 18px; border-radius: 3px; display: inline-block;
+  }
   .finding {
     background: #1a1815; border: 0.5px solid #3a3835;
     padding: 14px 18px; border-radius: 6px; margin: 12px 0;
@@ -596,16 +613,90 @@ POEMS = {
 # ============================================================
 st.title("poem → color")
 st.markdown(
-    '<p class="meta">'
-    'five poems where tokenization changes the meaning. plus your own.<br>'
-    'colors come from projecting each token\'s embedding into RGB space — '
-    'similar colors mean semantically similar tokens.'
+    '<p class="meta" style="margin-bottom: 1.2rem;">'
+    'what tokenization does to poetry, in pictures.'
     '</p>',
     unsafe_allow_html=True,
 )
+
+# 30-second primer — visible by default
+st.markdown(
+    '<div class="primer" style="max-width: 780px;">'
+    '<p>Before a language model can read a poem, it has to break the text into pieces called <strong>tokens</strong> '
+    'and assign each piece a number. Sometimes a token is a whole word (<code>flowers</code>). '
+    'Often it\'s a fragment (<code>champagn</code> + <code>##e</code>). '
+    'These choices aren\'t neutral — they shape what the model can actually see.</p>'
+    '<p>This demo turns each token into a colored cell. The color comes from the token\'s '
+    '<strong>embedding</strong> — a high-dimensional vector the model uses to encode meaning. '
+    'We squash that vector down to three numbers and call them red, green, and blue. '
+    'The result: <strong>tokens with similar meanings get similar colors</strong>. '
+    'Words about warmth and life cluster in one color region; words about cold or water in another; '
+    'meaningless subword fragments end up muddy gray.</p>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+# Visual legend
+st.markdown(
+    '<div class="legend">'
+    '<span style="color:#c8c4b8; font-weight:500;">how to read the colored strips:</span>'
+    '<span class="legend-cell"><span class="legend-swatch" style="background:#d4543a;"></span>warm = fire / life / red</span>'
+    '<span class="legend-cell"><span class="legend-swatch" style="background:#7aa86a;"></span>green = nature / objects</span>'
+    '<span class="legend-cell"><span class="legend-swatch" style="background:#5a7a9a;"></span>blue = water / cold / abstract</span>'
+    '<span class="legend-cell"><span class="legend-swatch" style="background:#7a6a78;"></span>muddy = function words / fragments</span>'
+    '</div>',
+    unsafe_allow_html=True,
+)
+
+# Optional deeper dive — collapsed by default
+with st.expander("a slightly longer explanation"):
+    st.markdown(
+        '<div class="primer">'
+
+        '<p><strong>Why tokenization isn\'t just splitting on spaces.</strong> '
+        'You might think a tokenizer would just cut text at the whitespace and call each word a token. '
+        'Some do (we include one called <code>character-level</code> for comparison). '
+        'But most modern language models — GPT, Claude, BERT, LLaMA — use <strong>subword tokenization</strong>. '
+        'They start with a fixed vocabulary of, say, 100,000 common pieces (whole words, common roots, frequent fragments) '
+        'and any text gets greedily matched against it. Common words stay whole; uncommon words get chopped into '
+        'recognizable pieces. <code>wheelbarrow</code> isn\'t in the vocab, so it becomes <code>wheel</code> + <code>barrow</code>. '
+        '<code>Immortality</code> becomes <code>Imm</code> + <code>ort</code> + <code>ality</code>. '
+        'These chopping decisions are made once, when the tokenizer is trained, and they\'re frozen forever after.</p>'
+
+        '<p><strong>Why each token gets a number.</strong> '
+        'After the text is broken into tokens, each token is replaced by its position in the vocabulary — '
+        'an integer ID. The word <code>the</code> might be ID 264. <code>flowers</code> might be 81154. '
+        'Models do all their math on these integers (and the vectors associated with them), never on the original text. '
+        'You can see these IDs in the table under each poem.</p>'
+
+        '<p><strong>What an embedding is.</strong> '
+        'Each token ID points to a row in a giant lookup table the model has learned. '
+        'That row is a list of ~384 numbers (in the model we\'re using, MiniLM-L6-v2). '
+        'These numbers — the <strong>embedding</strong> — encode what the model "knows" about the token: '
+        'which other tokens it tends to appear near, what topics it shows up in, what grammatical role it plays. '
+        'Two tokens with similar embeddings are tokens the model treats as semantically related. '
+        'When you see <code>summer</code>, <code>winter</code>, <code>autumn</code>, <code>spring</code> all glow the same warm color, '
+        'that\'s because their 384-dimensional embeddings are nearly identical — the model has learned "season-ness" as a region.</p>'
+
+        '<p><strong>How we\'re turning embeddings into colors.</strong> '
+        'A 384-dimensional vector can\'t be displayed directly. So we use a technique called PCA (principal component analysis) '
+        'to project each embedding down to 3 dimensions, fitted on a small set of anchor sentences about warmth, nature, and water. '
+        'Those 3 numbers become RGB. It\'s a lossy compression, but it preserves the overall structure: '
+        'tokens close in meaning end up close in color.</p>'
+
+        '<p><strong>What to look for in each poem.</strong> '
+        'Bright, distinct colors usually mean strong semantic content (concrete nouns, vivid verbs). '
+        'Muddy browns and grays usually mean function words (the, of, with) or meaningless subword fragments. '
+        'When two unrelated words share a color, the model considers them semantically related. '
+        'When a word you expect to be vivid comes out muddy, it\'s probably been fragmented and the model is reading the pieces, not the whole.</p>'
+
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
 st.markdown("<hr>", unsafe_allow_html=True)
 
-# Build tabs: 4 poems + custom
+# Build tabs: 5 poems + custom
 tab_labels = [k.split(" — ")[0] for k in POEMS.keys()] + ["your poem"]
 tabs = st.tabs(tab_labels)
 
