@@ -509,6 +509,85 @@ POEMS = {
             "Poems that use uncommon vocabulary or formal diction get fragmented more aggressively than colloquial ones."
         ),
     },
+    "Lemay — In Lieu of Flowers": {
+        "text": (
+            "Although I love flowers very much, I won't see them when I'm gone. "
+            "So in lieu of flowers: Buy a book of poetry written by someone still alive, "
+            "sit outside with a cup of tea, a glass of wine, and read it out loud, by yourself or to someone, or silently. "
+            "Spend some time with a single flower. A rose maybe. Smell it, touch the petals. Really look at it. "
+            "Drink a nice bottle of wine with someone you love. Or, Champagne. "
+            "And think of what John Maynard Keynes said, \"My only regret in life is that I did not drink more Champagne.\" "
+            "Or what Dom Perignon said when he first tasted the stuff: \"Come quickly! I am tasting stars!\" "
+            "Take out a paint set and lay down some colours. "
+            "Watch birds. Common sparrows are fine. Pigeons, too. Geese are nice. Robins. "
+            "In lieu of flowers, walk in the trees and watch the light fall into it. Eat an apple, a really nice big one. "
+            "I hope it's crisp. Have a long soak in the bathtub with candles, maybe some rose petals. "
+            "Sit on the front stoop and watch the clouds. Have a dish of strawberry ice cream in my name. "
+            "If it's winter, have a cup of hot chocolate outside for me. If it's summer, a big glass of ice water. "
+            "If it's autumn, collect some leaves and press them in a book you love. "
+            "Sit and look out a window and write down what you see. Write some other things down. "
+            "In lieu of flowers, I would wish for you to flower. I would wish for you to blossom, to open, to be beautiful."
+        ),
+        "tokenizer": "bert (wordpiece)",
+        "headline": "the model lights up exactly what the poem bequeaths",
+        "intro": (
+            "Shawna Lemay's poem-essay, from <em>The Flower Can Always Be Changing</em> (2018). "
+            "She wrote it after reading a friend's father's obituary on Facebook — he'd asked mourners "
+            "to take a loved one out for lunch instead of sending flowers. "
+            "Lemay expanded the request into her own: what she'd want people to do when she's gone. "
+            "It's a funeral poem disguised as a list of small pleasures. "
+            "Watch what the embedding model lights up — and what it can't see at all."
+        ),
+        "findings": [
+            ("the colored cells are the bequest",
+             "Run the embedding-PCA color mode and look at which cells glow brightest: "
+             "<strong>flowers, trees, ice, summer, winter, autumn, leaves, blossom</strong>. "
+             "These are the things Lemay is leaving to her readers — the sensory inheritances she can't take with her. "
+             "The function words connecting them (with, of, for, in, to) sit gray and muted. "
+             "<em>The grammar of giving is the color of mud; the things being given are the bright pixels.</em>"),
+            ("the seasons cluster again, but the cycle means something different here",
+             "Just like cummings, the seasons (summer, winter, autumn) form a tight chromatic cluster. "
+             "But here the cycle isn't decoration — it's a structural device: 'if it's winter, have hot chocolate; "
+             "if it's summer, ice water; if it's autumn, collect leaves.' Lemay uses the year's full cycle to say "
+             "<em>whenever you remember me, here's what to do.</em> The model sees the season-cluster the same way "
+             "it saw it in cummings, but the poem is using that cluster to encode the passage of time-without-her."),
+            ("hope, wish, think — purple, and only at the end",
+             "Look at the placement of the few mental-state words in the poem. "
+             "<strong>think</strong> appears once, mid-poem (about Keynes). "
+             "<strong>hope</strong> appears once ('I hope it's crisp'). "
+             "<strong>wish</strong> appears twice — both in the final lines: "
+             "'I would wish for you to flower. I would wish for you to blossom.' "
+             "The embedding puts these in the purple-violet family, visually distinct from everything else. "
+             "<em>The poem withholds its interiority until the final lines, then floods.</em> "
+             "The visualization makes the emotional architecture visible."),
+            ("the famous quotes get destroyed",
+             "Lemay quotes John Maynard Keynes and Dom Pérignon. Watch what BERT does: "
+             "<strong>'Champagne'</strong> splits into <code>champagn</code> + <code>##e</code>. "
+             "<strong>'Dom Perignon'</strong> splits into <code>dom</code> + <code>per</code> + <code>##ignon</code> — "
+             "three meaningless fragments. The most famous champagne in the world becomes nothing the model can recognize. "
+             "<strong>'John Maynard Keynes'</strong> stays as separate proper-noun tokens, all muddy. "
+             "The cultural references — the things Lemay assumes her reader will recognize — "
+             "are exactly the things the tokenizer cannot."),
+            ("the model can't see what kind of poem this is",
+             "Nothing in the embedding tells the model this is a funeral poem. It doesn't know 'someone still alive' "
+             "is a tell. It doesn't know the speaker is dead, addressing the living. It doesn't know the title means "
+             "<em>instead of the flowers you'd send to my funeral.</em> All of that lives in human framing — the genre, "
+             "the cultural convention, the specific context of an obituary. "
+             "The embedding makes the bright-pixel pattern visible to us, and we supply the meaning. "
+             "<strong>The gap between what the model can see (semantic categories) and what we can see "
+             "(genre, mortality, address) might be the deepest thing this demo accidentally reveals.</strong>"),
+        ],
+        "takeaway": (
+            "This poem makes the strongest case for what tokenization + embedding actually does: "
+            "it reveals semantic structure (color clusters, mental-state words, season cycles) "
+            "while remaining entirely blind to genre, intention, and address. "
+            "Lemay's poem is a gift from a dying woman to the living. The model sees a list of nouns about flowers and weather. "
+            "The bright pixels are real — they correspond to real semantic regions in language. "
+            "But the meaning of the poem is not in the pixels. It's in what we bring to them: "
+            "the knowledge that someone is saying goodbye. That part is ours, not the model's, "
+            "and probably always will be."
+        ),
+    },
 }
 
 
@@ -518,7 +597,7 @@ POEMS = {
 st.title("poem → color")
 st.markdown(
     '<p class="meta">'
-    'four poems where tokenization changes the meaning. plus your own.<br>'
+    'five poems where tokenization changes the meaning. plus your own.<br>'
     'colors come from projecting each token\'s embedding into RGB space — '
     'similar colors mean semantically similar tokens.'
     '</p>',
